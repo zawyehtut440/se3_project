@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>register</title>
+</head>
+<body>
+    <h2>註冊</h2>
+    <form id="registerForm" name="registerForm" method="post">
+        帳號: <input type="text" name="username" required> <br>
+        密碼: <input type="password" name="password" required autocomplete="on"> <br>
+        <!-- 密碼確認: <input type="password" name="confirmPassword" required autocomplete="on"> <br> -->
+        角色:
+        <select name="role" id="role">
+            <option value="客戶">客戶</option>
+        </select> <br>
+        <input type="button" onclick="fetchFormData('register')" value="註冊">
+    </form>
+</body>
+</html>
