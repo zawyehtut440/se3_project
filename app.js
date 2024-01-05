@@ -79,6 +79,125 @@ function logout() {
 }
 
 /**
+ * customer function
+ */
+
+function loadProduct() {
+    let url = './customer/customerController.php?act=loadProduct';
+    fetch(url, {
+        method: 'POST',
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        let div = document.getElementById('subMain');
+        let tbHead = ['商品ID', '商家ID', '商品名稱', '商品介紹', '商品價格', '數量'];
+        let result = showAllProduct(tbHead, data);
+        div.innerHTML = result;
+    });
+}
+
+function showAllProduct(tbHead, data) {
+    let result = '<table border=1>';
+    // cope with table header first
+    result += '<tr>';
+    for (let thead of tbHead) {
+        result += '<th>' + thead + '</th>'
+    }
+    result += '<th>-</th>';
+    result += '</tr>';
+    // then cope with table body
+    for (let r of data) {
+        result += '<tr>';
+        for (let key in r) {
+            result += "<td>" + r[key] + "</td>";
+        }
+        let productID = r['productID'];
+        // quantity
+        result += `<td><input id="myNum${productID}" type="number" name="quantity${productID}" value="1"`+'></td>';
+        // add cart
+        result += "<td><button onclick='addCart(" + productID + ")'>加入購物車</button></td>";
+        result += "</tr>";
+    }
+    result += '</table>';
+    return result;
+}
+
+function addCart(productID) {
+    let inputElement = document.getElementById('myNum'+productID);
+    let quantity = inputElement.value;
+    let url = './customer/customerController.php?act=addCart&productID='+ productID +'&quantity=' + quantity;
+    let mydat = new FormData();
+    mydat.append('customerID', Cookies.get('userID'))
+    fetch(url, {
+        method: 'POST',
+        body: mydat,
+    })
+    .then(function(response) {
+        return response.text();
+    });
+}
+
+function loadCart() {
+    // load customer shoppig cart base on customer's userID
+    let url = './customer/customerController.php?act=loadCart'
+    let mydat = new FormData();
+    mydat.append('customerID', Cookies.get('userID'));
+    fetch(url, {
+        method: 'POST',
+        body: mydat,
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        let div = document.getElementById('subMain');
+        let tbHead = ['商品ID', '商品名稱', '商品價格', '購買數量', '總價'];
+        let result = showCartTable(tbHead, data);
+        div.innerHTML = result;
+    });
+}
+
+function showCartTable(tbHead, data) {
+    let result = '<table border=1>';
+    // cope with table header first
+    result += '<tr>';
+    for (let thead of tbHead) {
+        result += '<th>' + thead + '</th>'
+    }
+    result += '<th>-</th>';
+    result += '</tr>';
+    // then cope with table body
+    for (let r of data) {
+        result += '<tr>';
+        for (let key in r) {
+            if (key !== 'cartID') {
+                result += "<td>" + r[key] + "</td>";
+            }
+        }
+        // total price
+        let totalPrice = Number(r['price']) * Number(r['quantity']);
+        result += '<td>' + totalPrice + '</td>'
+        let cartID = r['cartID'];
+        result += "<td><button onclick='delCartProduct(" + cartID + ")'>刪</button></td>";
+        result += "</tr>"
+    }
+    result += '</table>';
+    return result;
+}
+
+function delCartProduct(cartID) {
+    let url = './customer/customerController.php?act=delCartProduct&cartID=' + cartID;
+    fetch(url, {
+        method: 'GET',
+    })
+    .then(function(response) {
+        loadCart();
+    });
+}
+
+/**
  * supplier function
  */
 
