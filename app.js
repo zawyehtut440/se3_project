@@ -108,8 +108,8 @@ function getRedirectPage(role) {
 function logout() {
     Cookies.remove('userID');
     Cookies.remove('userRole');
-    // redirect to login page
-    loadURL('login.html');
+    // relaod page
+    window.location.reload();
 }
 
 /**
