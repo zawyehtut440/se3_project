@@ -25,19 +25,14 @@ function loadSubURL(url) {
 }
 
 // show table on page
-function showTable(tbHead, data, updateBtn=true, deleteBtn=true) {
+function showProductListTable(tbHead, data) {
     let result = '<table border=1>';
     // cope with table header first
     result += '<tr>';
     for (let thead of tbHead) {
         result += '<th>' + thead + '</th>'
     }
-    if (updateBtn) {
-        result += '<th>-</th>';
-    }
-    if (deleteBtn) {
-        result += '<th>-</th>';
-    }
+    result += '<th>-</th><th>-</th>';
     result += '</tr>';
     // then cope with table body
     for (let r of data) {
@@ -46,12 +41,8 @@ function showTable(tbHead, data, updateBtn=true, deleteBtn=true) {
             result += "<td>" + r[key] + "</td>";
         }
         let id = r['productID'];
-        if (updateBtn) {
-            result += "<td><button onclick='loadEditForm(" + id + ")'>修改</button></td>";
-        }
-        if (deleteBtn) {
-            result += "<td><button onclick='delItem(" + id + ")'>刪</button></td>";
-        }
+        result += "<td><button onclick='loadEditForm(" + id + ")'>修改</button></td>";
+        result += "<td><button onclick='delItem(" + id + ")'>刪</button></td>";
         result += "</tr>"
     }
     result += '</table>';
@@ -182,7 +173,7 @@ function supplierLoadProductList() {
         // print out the list of product that supplier had added
         let div = document.getElementById('subMain');
         let tbHead = ['商品ID', '商家ID', '商品名稱', '商品介紹', '商品價格'];
-        let result = showTable(tbHead, data);
+        let result = showProductListTable(tbHead, data);
         div.innerHTML = result;
     });
 }
