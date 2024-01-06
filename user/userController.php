@@ -15,6 +15,7 @@ switch ($act) {
         $password = $_POST['password'];
         $role = $_POST['role'];
         addUser($username, $password, $role);
+        echo json_encode(array());
         return;
 }
 
