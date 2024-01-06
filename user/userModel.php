@@ -3,7 +3,7 @@ require('../dbConfig.php');
 
 function login($username, $password) {
     global $db;
-    $sql = "SELECT `userID`, `role` FROM `users` WHERE `userName`=? AND `password`=?;";
+    $sql = "SELECT `userID`, `role` FROM `users` WHERE `username`=? AND `password`=?;";
     $stmt = mysqli_prepare($db, $sql );
     mysqli_stmt_bind_param($stmt, "ss", $username, $password);
 
@@ -14,7 +14,7 @@ function login($username, $password) {
 
 function addUser($username, $password, $role) {
     global $db;
-    $sql = "INSERT INTO `users` (`userName`, `password`, `role`) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO `users` (`username`, `password`, `role`) VALUES (?, ?, ?)";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, "sss", $username, $password, $role);
     mysqli_stmt_execute($stmt);
