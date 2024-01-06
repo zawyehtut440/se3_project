@@ -78,6 +78,17 @@ function logout() {
     window.location.reload();
 }
 
+function register() {
+    // if have already login
+    let userID = Cookies.get('userID');
+    if (userID) {
+        // clear subMain
+        document.getElementById('subMain').innerHTML = '';
+    }
+    // loadURL register.html
+    loadURL('register.html');
+}
+
 /**
  * customer function
  */
