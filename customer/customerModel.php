@@ -148,4 +148,38 @@ function deleteCart($customerID) {
     return true;
 }
 
+function getCustomerOrders($customerID) {
+    global $db;
+    $sql = "SELECT `orderID`, `merchantID`, `orderStatus` FROM `orders` WHERE `customerID`=?;";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $customerID);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $rows = array();
+    while ($r = mysqli_fetch_assoc($result)) {
+        $rows[] = $r;
+    }
+    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
+    return $rows;
+}
+
+function getOrderDetails($orderID) {
+    global $db;
+    $sql = "SELECT `orderitems`.`orderID`, `orderitems`.`productID`, `products`.`name`, `orderitems`.`quantity`, `products`.`price` FROM `orderitems` JOIN `products` ON `orderitems`.`productID`=`products`.`productID` WHERE `orderitems`.`orderID`=?;";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $orderID);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $rows = array();
+    while ($r = mysqli_fetch_assoc($result)) {
+        $rows[] = $r;
+    }
+    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
+    return $rows;
+}
+
 ?>

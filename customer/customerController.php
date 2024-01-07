@@ -52,6 +52,18 @@ switch ($act) {
         // delete cart's items of customerID
         deleteCart($customerID);
         return;
+    case "viewOrderStatus":
+        $customerID = (int)$_POST['customerID'];
+        $customerOrders = getCustomerOrders($customerID);
+        // orderID, merchantID, orderStauts
+        echo json_encode($customerOrders);
+        return;
+    case "viewOrderDetail":
+        $orderID = (int)$_GET['orderID'];
+        // orderID, productID, product name, quantity, price
+        $orderDetails = getOrderDetails($orderID);
+        echo json_encode($orderDetails);
+        return;
 }
 
 ?>
