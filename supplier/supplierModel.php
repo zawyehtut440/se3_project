@@ -1,17 +1,13 @@
 <?php
 require('../dbConfig.php');
 
-function getItemList() {
+function getItemList($id) {
     global $db;
-    $sql = "SELECT * FROM `product`;";
+    $sql = "SELECT productID, name, price, description FROM `products` where merchantID=?;";
     $stmt = mysqli_prepare($db, $sql); // precompile sql指令,建立statement物件,以便執行SQL
+    mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt); // 執行SQL
     $result = mysqli_stmt_get_result($stmt); // 取得查詢結果
-
-    if (!$result) {
-        // 如果查詢失敗，可以輸出錯誤資訊以便於除錯
-        die('資料庫查詢錯誤: ' . mysqli_error($db));
-    }
 
     $rows = array();
     while ($r = mysqli_fetch_assoc($result)) {
@@ -20,18 +16,18 @@ function getItemList() {
     return $rows;
 }
 
-function addItem($name, $price, $description, $remainNum) {
+function addItem($userID, $name, $price, $description) {
     global $db;
-    $sql = "INSERT INTO `product` (productName, productCost, productContent, productNumber) VALUES (?, ?, ?, ?);";
+    $sql = "INSERT INTO `products` (merchantID, name, price, description) VALUES (?, ?, ?, ?);";
     $stmt = mysqli_prepare($db, $sql); // precompile sql指令,建立statement物件,以便執行SQL
-    mysqli_stmt_bind_param($stmt, "sisi", $name, $price, $description, $remainNum);
+    mysqli_stmt_bind_param($stmt, "isis", $userID, $name, $price, $description);
     mysqli_stmt_execute($stmt); // 執行SQL
     return true;
 }
 
 function getItem($id) {
     global $db;
-    $sql = "SELECT * FROM `product` WHERE id=?;";
+    $sql = "SELECT * FROM `products` WHERE productID=?;";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
@@ -40,25 +36,25 @@ function getItem($id) {
     return $row;
 }
 
-function updateItem($id, $name, $price, $description, $remainNum) {
+function updateItem($id, $name, $price, $description) {
     global $db;
-    $sql = "UPDATE `product` SET productName=?, productCost=?, productContent=?, productNumber=? WHERE id=?;";
+    $sql = "UPDATE `products` SET name=?, price=?, description=? WHERE productID=?;";
     $stmt = mysqli_prepare($db, $sql);
-    mysqli_stmt_bind_param($stmt, "sisii", $name, $price, $description, $remainNum, $id);
+    mysqli_stmt_bind_param($stmt, "sisi", $name, $price, $description, $id);
     mysqli_stmt_execute($stmt);
     return true;
 }
 
 function delItem($id) {
     global $db;
-    $sql = "DELETE FROM `product` WHERE id=?;";
+    $sql = "DELETE FROM `products` WHERE productID=?;";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
     return true;
 }
 
-function getOrders() {
+function getOrders($id) {
     global $db;
     $sql = "SELECT orders.orderID, 
                    users.username, 
@@ -72,15 +68,12 @@ function getOrders() {
             END AS orderStatusText,
                    orders.orderStatus
             FROM orders
-            INNER JOIN users ON orders.customerID = users.userID;";
+            INNER JOIN users ON orders.customerID = users.userID
+            where merchantID = ?;";
     $stmt = mysqli_prepare($db, $sql); // precompile sql指令,建立statement物件,以便執行SQL
+    mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt); // 執行SQL
     $result = mysqli_stmt_get_result($stmt); // 取得查詢結果
-
-    if (!$result) {
-        // 如果查詢失敗，可以輸出錯誤資訊以便於除錯
-        die('資料庫查詢錯誤: ' . mysqli_error($db));
-    }
 
     $rows = array();
     while ($r = mysqli_fetch_assoc($result)) {
@@ -93,11 +86,11 @@ function getOrderItems($id) {
     global $db;
     $sql = "SELECT `orderitems`.`orderItemID`,
                    `users`.`userName`,
-                   `product`.`productName`,
+                   `products`.`name`,
                    `quantity`
             FROM `orderitems` 
             INNER JOIN `users` ON `orderitems`.`customerID` = `users`.`userID`
-            INNER JOIN `product` ON `orderitems`.`productID` = `product`.`id`
+            INNER JOIN `products` ON `orderitems`.`productID` = `products`.`productID`
             WHERE `orderitems`.`orderID`=?;";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);

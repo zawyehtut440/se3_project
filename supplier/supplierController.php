@@ -1,5 +1,5 @@
 <?php
-require('supplierModel(b).php');
+require('supplierModel.php');
 
 $act = $_REQUEST['act'];
 

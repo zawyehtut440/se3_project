@@ -33,6 +33,11 @@ function fetchFormData(action) {
     let formID = action + 'Form';
     let form = document.getElementById(formID);
     let mydat = new FormData(form);
+    // Get userID from cookies
+    let userID = Cookies.get('userID');
+    if (userID) {
+        mydat.append('userID', userID); // Append userID to FormData
+    }
     let url = './user/userController.php?act=' + action;
     fetch(url, {
         method: 'POST',
@@ -51,6 +56,7 @@ function fetchFormData(action) {
             Cookies.set('userRole', userRole);
             // load page base on userRole
             let role = Cookies.get('userRole');
+            let id = Cookies.get('userID');
             loadURL(getRedirectPage(role));
         } else if (action === 'register') {
             // do something ..........
@@ -63,7 +69,7 @@ function getRedirectPage(role) {
     if (role === '客戶') {
         return 'customer/customer.html';
     } else if (role === '商家') {
-        return 'supplier/supplier.html';
+        return 'supplier/supplierView.html';
     } else if (role === '物流') {
         return 'logistics/logistics.html';
     } else {
@@ -195,7 +201,6 @@ function showCartTable(tbHead, data) {
         result += "</tr>"
     }
     result += '</table>';
-    result += '<button onclick="checkout()">結帳</button>';
     return result;
 }
 
@@ -321,114 +326,181 @@ function delCartProduct(cartID) {
  * supplier function
  */
 
-// loadEditForm
+function loadList() {
+    let userID = Cookies.get('userID');
+    let url = "./supplier/supplierControl.php?act=listItem&id=" + userID;
+    fetch(url, {
+        method: 'GET',
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        let div = document.getElementById('subMain');
+        let result = "<table border=1>";
+        result += '<tr><th>id</th><th>商品名稱</th><th>價格</th><th>敘述</th>';
+        result += '<th>-</th><th>-</th></tr>'
+        for (let r of data) {
+            result += "<tr>";
+
+            for (let key in r) {
+                result += "<td>"+r[key]+"</td>";
+            }
+            result += "<td><button onclick='loadEditForm(" + r['productID'] + ")'>修改</button></td>";
+            result += "<td><button onclick='delItem(" + r['productID'] + ")'>刪</button></td>";
+
+            result += "</tr>"
+        }
+        result += "</table>"
+        div.innerHTML = result;
+    })
+}
+
 function loadEditForm(id) {
-    let url = './supplier/supplierController.php?act=getItemInfo&id=' + id;
+    let url = './supplier/supplierControl.php?act=getItemInfo&id=' + id;
     fetch(url, {
         method: 'GET',
     })
     .then(function (response) {
         return response.json();
     })
-    .then(function (data) {
+    .then(function(data) {
         let form = loadUpdateFormUI(data)
         let div = document.getElementById('subMain');
         div.innerHTML = form;
-    });
+    })
 }
 
 function loadUpdateFormUI(data) {
-    console.log(data);
     let result = '<form id="myForm" name="myForm" method="post">';
-    result += '商品名稱: <input name="productName" type="text" value="' + data['name'] + '" ><br>';
-    result += '商品介紹: <input name="productDescription" type="text" value="' + data['description'] + '" ><br>';
-    result += '商品價格: <input name="productPrice" type="number" value="' + data['price'] + '" ><br>';
-    result += '<input type="button" onclick="updateItem(' + data['productID'] + ')" value="修改">';
+    result += '商品名稱: <input name="name" type="text" value="' + data['name'] + '" ><br>';
+    result += '商品價格: <input name="price" type="number" value="' + data['price'] + '" ><br>';
+    result += '商品資訊: <input name="description" type="text" value="' + data['description'] + '" ><br>';
+    result += '<input type="button" onclick="updateItem('+ data['productID'] + ')" value="修改">';
     result += '</form>';
     return result;
+}
+
+function addItem() {
+    let userID = Cookies.get('userID');
+    let form = document.getElementById('myForm');
+    let mydat = new FormData(form);
+    mydat.append('userID', userID);
+
+    let url = './supplier/supplierControl.php?act=addItem';
+    fetch(url, {
+        method: 'POST',
+        body: mydat,
+    })
+    .then(function(response) {
+        return response.text();
+    })
+    .then(function(data) {
+        loadList();
+    })
 }
 
 function updateItem(id) {
     let form = document.getElementById('myForm');
     let mydat = new FormData(form);
-    let url = './supplier/supplierController.php?act=updateItem&id=' + id;
+    let url = './supplier/supplierControl.php?act=updateItem&id=' + id;
     fetch(url, {
         method: 'POST',
         body: mydat,
     })
-    .then(function (response) {
-        supplierLoadProductList();
-    });
+    .then(function(response) {
+        return response.text();
+    })
+    .then(function(data) {
+        loadList();
+    })
 }
 
-// delItem
 function delItem(id) {
-    let url = './supplier/supplierController.php?act=delItem&id=' + id;
+    let url = './supplier/supplierControl.php?act=delItem&id=' + id;
     fetch(url, {
         method: 'GET',
     })
     .then(function(response) {
-        supplierLoadProductList();
-    });
+        loadList();
+    })
 }
 
-function supplierLoadProductList() {
-    let url = './supplier/supplierController.php?act=listItem';
-    let mydat = new FormData();
-    mydat.append('supplierID', Cookies.get('userID'));
+function loadOrders() {
+    let id = Cookies.get('userID');
+    let url = "./supplier/supplierControl.php?act=orders&id=" + id;
     fetch(url, {
-        method: 'POST',
-        body: mydat,
+        method: 'GET',
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        let div = document.getElementById('subMain');
+        let result = "<table border=1>";
+        result += '<tr><th>訂單序號</th><th>客戶名稱</th><th>訂單狀態</th>';
+        result += '<th>詳情</th><th>處理/寄送</th></tr>'
+        for (let r of data) {
+            result += "<tr>";
+
+            let keys = Object.keys(r);
+            for (let i = 0; i < keys.length; i++) {
+                let key = keys[i];
+                if (key === 'orderStatus') {
+                    continue;
+                }
+                result += "<td>" + r[key] + "</td>";
+            }
+            result += "<td><button onclick='loadOrderItems(" + r['orderID'] + ")'>詳情</button></td>";
+            if (r['orderStatus'] === 0) {
+                result += "<td><button onclick='changeOrderStatus(" + r['orderID'] + "," + r['orderStatus'] + ")'>處理訂單</button></td>";
+            } else if (r['orderStatus'] === 1) {
+                result += "<td><button onclick='changeOrderStatus(" + r['orderID'] + "," + r['orderStatus'] + ")'>寄送訂單</button></td>";
+            } 
+            result += "</tr>"
+        }
+        result += "</table>"
+        div.innerHTML = result;
+    })
+}
+
+function loadOrderItems(id) {
+    let url = './supplier/supplierControl.php?act=getOrderItemsInfo&id=' + id;
+    fetch(url, {
+        method: 'GET',
     })
     .then(function (response) {
         return response.json();
     })
-    .then(function (data) {
-        // print out the list of product that supplier had added
+    .then(function(data) {
+        let form = loadOrderItemsUI(data)
         let div = document.getElementById('subMain');
-        let tbHead = ['商品ID', '商家ID', '商品名稱', '商品介紹', '商品價格'];
-        let result = showProductListTable(tbHead, data);
-        div.innerHTML = result;
-    });
-}
-
-// show table on page
-function showProductListTable(tbHead, data) {
-    let result = '<table border=1>';
-    // cope with table header first
-    result += '<tr>';
-    for (let thead of tbHead) {
-        result += '<th>' + thead + '</th>'
-    }
-    result += '<th>-</th><th>-</th>';
-    result += '</tr>';
-    // then cope with table body
-    for (let r of data) {
-        result += '<tr>';
-        for (let key in r) {
-            result += "<td>" + r[key] + "</td>";
-        }
-        let id = r['productID'];
-        result += "<td><button onclick='loadEditForm(" + id + ")'>修改</button></td>";
-        result += "<td><button onclick='delItem(" + id + ")'>刪</button></td>";
-        result += "</tr>"
-    }
-    result += '</table>';
-    return result;
-}
-
-function supplierAddItem() {
-    let form = document.getElementById('myForm');
-    // product name, description, price
-    let mydat = new FormData(form);
-    // add supplierID to mydat
-    mydat.append('supplierID', Cookies.get('userID'));
-    let url = './supplier/supplierController.php?act=addItem';
-    fetch(url, {
-        method: 'POST',
-        body: mydat,
+        div.innerHTML = form;
     })
-    .then(function (data) {
-        supplierLoadProductList();
+}
+
+function loadOrderItemsUI(data) {
+    let result = '<table border=1>';
+    result += '<tr><th>訂單商品序號</th><th>客戶名稱</th><th>商品名稱</th><th>所需數量</th></tr>';
+    
+    for (let r of data) {
+        result += "<tr>";
+        result += "<td>"+r['orderItemID']+"</td>";
+        result += "<td>"+r['userName']+"</td>";
+        result += "<td>"+r['name']+"</td>";
+        result += "<td>"+r['quantity']+"</td>";
+        result += "</tr>";
+    }
+    result += "</table>";
+    return result;
+};
+
+function changeOrderStatus(id, status) {
+    let url = './supplier/supplierControl.php?act=changeOrderStatus&id=' + id + '&status=' + status;
+    fetch(url, {
+        method: 'GET',
+    })
+    .then(function(response) {
+        loadOrders();
     })
 }
