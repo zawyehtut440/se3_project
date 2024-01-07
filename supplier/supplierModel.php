@@ -66,6 +66,7 @@ function getOrders($id) {
                 WHEN orders.orderStatus = 4 THEN '已送達'
                 ELSE '其他狀態'
             END AS orderStatusText,
+                   orders.rating, 
                    orders.orderStatus
             FROM orders
             INNER JOIN users ON orders.customerID = users.userID
