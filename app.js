@@ -516,7 +516,7 @@ function loadOrders() {
     .then(function(data) {
         let div = document.getElementById('subMain');
         let result = "<table border=1>";
-        result += '<tr><th>訂單序號</th><th>客戶名稱</th><th>訂單狀態</th>';
+        result += '<tr><th>訂單序號</th><th>客戶名稱</th><th>訂單狀態</th><th>評價</th>';
         result += '<th>詳情</th><th>處理/寄送</th></tr>'
         for (let r of data) {
             result += "<tr>";
@@ -526,6 +526,9 @@ function loadOrders() {
                 let key = keys[i];
                 if (key === 'orderStatus') {
                     continue;
+                }
+                if (r[key] === 0) {
+                    r[key] = '尚未評價'
                 }
                 result += "<td>" + r[key] + "</td>";
             }
