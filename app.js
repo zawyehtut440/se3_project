@@ -201,6 +201,7 @@ function showCartTable(tbHead, data) {
         result += "</tr>"
     }
     result += '</table>';
+    result += '<button onclick="checkout()">結帳</button>';
     return result;
 }
 
