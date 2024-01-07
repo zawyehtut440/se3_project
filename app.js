@@ -195,7 +195,30 @@ function showCartTable(tbHead, data) {
         result += "</tr>"
     }
     result += '</table>';
+    result += '<button onclick="checkout()">結帳</button>';
     return result;
+}
+
+function checkout() {
+    let url = './customer/customerController.php?act=checkout';
+    let mydat = new FormData();
+    mydat.append('customerID', Cookies.get('userID'));
+    fetch(url, {
+        method: 'POST',
+        body: mydat,
+    })
+    .then(function(response) {
+        return response.text();
+    })
+    .then(function(data) {
+        console.log('echo value from the server' + data);
+        let div = document.getElementById('subMain');
+        div.innerHTML = '已完成結帳, <button onclick="loadCart()">查看訂單狀態</button>';
+    });
+}
+
+function viewOrderStatus() {
+    return;
 }
 
 function delCartProduct(cartID) {
