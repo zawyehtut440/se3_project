@@ -15,6 +15,26 @@ function getAllProducts() {
     return $rows;
 }
 
+function getCartRow($productID, $customerID) {
+    global $db;
+    $sql = "SELECT * FROM `shoppingcart` WHERE `productID`=? AND `customerID`=?;";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "ii", $productID, $customerID);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt); // 取得查詢結果
+
+    return mysqli_fetch_assoc($result);
+}
+
+function updateCart($cartID, $quantity) {
+    global $db;
+    $sql = "UPDATE `shoppingcart` SET `quantity`=? WHERE `cartID`=?";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "ii", $quantity, $cartID);
+    mysqli_stmt_execute($stmt);
+    return true;
+}
+
 function addCart($productID, $customerID, $quantity) {
     global $db;
     $sql = "INSERT INTO `shoppingcart` (`productID`, `customerID`, `quantity`) VALUES (?, ?, ?);";

@@ -14,7 +14,16 @@ switch ($act) {
         $productID = (int)$_GET['productID']; // get productID
         $customerID = (int)$_POST['customerID']; // get customerID
         $quantity = (int)$_GET['quantity']; // get quantity
-        addCart($productID, $customerID, $quantity);
+        // check shoppingcart's productID, customerID pair whether existed
+        $row = getCartRow($productID, $customerID);
+        // if exist
+        if ($row != null) {
+            // get quantity + $quantity
+            updateCart($row['cartID'], $row['quantity'] + $quantity);
+        } else { // else
+            // addCart(productID, customerID, quantity)
+            addCart($productID, $customerID, $quantity);
+        }
         return;
     case "loadCart":
         // select all cart item from customerID
