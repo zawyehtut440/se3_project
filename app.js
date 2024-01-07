@@ -235,7 +235,7 @@ function viewOrderStatus() {
     })
     .then(function(data) {
         let div = document.getElementById('subMain');
-        let tbHead = ['訂單編號', '商家ID', '定單狀態'];
+        let tbHead = ['訂單編號', '商家ID', '商家名稱', '定單狀態'];
         let result = showOrderTable(tbHead, data);
         div.innerHTML = result;
     });
@@ -257,7 +257,7 @@ function showOrderTable(tbHead, data) {
         for (let key in r) {
             if (key === 'orderStatus') {
                 result += '<td>' + orderStatuses[r[key]] + '</td>'
-            } else {
+            } else if (key !== 'rating') {
                 result += "<td>" + r[key] + "</td>";
             }
         }
@@ -310,6 +310,83 @@ function showOrderDetailTable(tbHead, data) {
     result += '<br>總金額: ' + allProductsPrice + '元';
     result += '<button onclick="viewOrderStatus()">查看其他訂單狀態</button>';
     return result;
+}
+
+function ratingDeliveredOrder() {
+    // load order which is delivered
+    let url = './customer/customerController.php?act=viewOrderStatus';
+    let mydat = new FormData();
+    mydat.append('customerID', Cookies.get('userID'));
+    fetch(url, {
+        method: 'POST',
+        body: mydat,
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        // showing order that is delivered
+        let div = document.getElementById('subMain');
+        let tbHead = ['訂單編號', '商家ID', '商家名稱', '定單狀態', '給評價'];
+        let result = showOrderDeliveredTable(tbHead, data);
+        div.innerHTML = result;
+    });
+}
+
+function optionSelect(orderID) {
+    let result = `<select id="${orderID}rating" name="${orderID}rating">`;
+    result += '<option selectd value="1">1</option>'
+    result += '<option value="2">2</option>'
+    result += '<option value="3">3</option>'
+    result += '<option value="4">4</option>'
+    result += '<option value="5">5</option>'
+    result += '</select>';
+    return result;
+}
+
+function showOrderDeliveredTable(tbHead, data) {
+    let orderStatuses = ['未處理', '處理中', '寄送中', '已寄送', '已送達']
+    let result = '<table border=1>';
+    // cope with table header first
+    result += '<tr>';
+    for (let thead of tbHead) {
+        result += '<th>' + thead + '</th>'
+    }
+    result += '<th>-</th>';
+    result += '</tr>';
+    // then cope with table body
+    for (let r of data) {
+        if (r['orderStatus'] === 4 && r['rating'] === 0) {
+            result += '<tr>';
+            let orderID = r['orderID'];
+            // showing out
+            for (let key in r) {
+                if (key === 'orderStatus') {
+                    result += '<td>' + orderStatuses[r[key]] + '</td>'
+                } else if (key === 'rating') {
+                    result += '<td>' + optionSelect(orderID)+ '</td>';
+                } else {
+                    result += "<td>" + r[key] + "</td>";
+                }
+            }
+            result += '<td><button onclick="rating(' + orderID + ')"> 評價</button></td>';
+            result += "</tr>"
+        }
+    }
+    result += '</table>';
+    return result;
+}
+
+function rating(orderID) {
+    let ratingValue = document.getElementById(`${orderID}rating`).value;
+    let url = './customer/customerController.php?act=rating&orderID=' + orderID + '&ratingValue=' + ratingValue;
+    fetch(url, {
+        method: 'GET',
+    })
+    .then(function(response) {
+        // load ratingDeliveredOrder
+        ratingDeliveredOrder();
+    });
 }
 
 function delCartProduct(cartID) {

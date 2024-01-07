@@ -64,6 +64,11 @@ switch ($act) {
         $orderDetails = getOrderDetails($orderID);
         echo json_encode($orderDetails);
         return;
+    case "rating":
+        $orderID = (int)$_GET['orderID'];
+        $ratingValue = (int)$_GET['ratingValue'];
+        updateRating($orderID, $ratingValue);
+        return;
 }
 
 ?>

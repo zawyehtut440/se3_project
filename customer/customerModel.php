@@ -150,7 +150,7 @@ function deleteCart($customerID) {
 
 function getCustomerOrders($customerID) {
     global $db;
-    $sql = "SELECT `orderID`, `merchantID`, `orderStatus` FROM `orders` WHERE `customerID`=?;";
+    $sql = "SELECT `orders`.`orderID`, `orders`.`merchantID`, `users`.`username`, `orders`.`orderStatus`, `orders`.`rating` FROM `orders` JOIN `users` ON `orders`.`merchantID`=`users`.`userID` WHERE `orders`.`customerID`=?;";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, "i", $customerID);
     mysqli_stmt_execute($stmt);
@@ -180,6 +180,15 @@ function getOrderDetails($orderID) {
     mysqli_free_result($result);
     mysqli_stmt_close($stmt);
     return $rows;
+}
+
+function updateRating($orderID, $ratingValue) {
+    global $db;
+    $sql = "UPDATE `orders` SET `rating`=? WHERE `orderID`=?;";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "ii", $ratingValue, $orderID);
+    mysqli_stmt_execute($stmt);
+    return true;
 }
 
 ?>
